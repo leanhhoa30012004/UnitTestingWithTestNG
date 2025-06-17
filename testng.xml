@@ -1,0 +1,14 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="TestLoginSuite">
+    <test name="TDD Login Tests">
+        <classes>
+            <class name="com.binh.util.service.AuthenticationServiceTDDTest"/>
+
+        </classes>
+    </test>
+    <test name="DDT Login Tests">
+        <classes>
+            <class name="com.binh.util.service.AuthenticationServiceDDTTest"/>
+        </classes>
+    </test>
+</suite>
