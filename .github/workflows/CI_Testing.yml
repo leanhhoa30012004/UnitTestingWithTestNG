@@ -1,0 +1,92 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+name: Java Project with TestNG (CI/CD) | © 2024
+
+on:
+  push:
+    branches: [ "main" ]    # Trigger workflow when code is pushed to main branch
+  pull_request:
+    branches: [ "main" ]    # Trigger workflow when pull request is created to main branch
+
+jobs:
+  build:    # Build job for CI process
+
+    runs-on: ubuntu-latest    # Using Ubuntu virtual machine for building
+
+    steps:
+    - uses: actions/checkout@v4    # Checkout code from repository
+
+    - name: Set up JDK 24
+      uses: actions/setup-java@v3    # Setup Java environment
+      with:
+        java-version: '24'         # Using JDK 24 as requested
+        distribution: 'temurin'    # Using Temurin distribution (Eclipse Adoptium)
+        cache: maven               # Cache Maven dependencies
+
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml    # Build project with Maven (will run TestNG tests)
+      
+    - name: Distribute jar-war file
+      run: mkdir staging && cp target/*.jar staging  # Create staging directory and copy JAR files
+     
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+          name: java-application-package    # Name of the downloadable artifact
+          path: staging                     # Path to the artifacts
+
+  test:    # Separate job for testing with TestNG
+    needs: build    # This job runs after the build job completes
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 24
+      uses: actions/setup-java@v3
+      with:
+        java-version: '24'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Run TestNG Tests
+      run: mvn test -DsuiteXmlFile=testng.xml    # Run TestNG tests using the suite XML file
+
+    - name: Publish Test Report
+      if: success() || failure()    # Run this step even if tests fail
+      uses: actions/upload-artifact@v4
+      with:
+        name: testng-reports
+        path: target/surefire-reports    # TestNG report directory
+
+  deploy:    # Deployment job for CD process
+    needs: [build, test]    # This job runs after build and test jobs complete successfully
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'    # Only deploy when changes are on main branch
+
+    steps:
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: java-application-package
+        path: staging
+
+    # Example deployment step - can be customized based on your deployment needs
+    - name: Deploy to staging server
+      run: |
+        echo "Deploying application to staging server..."
+        # Add your deployment commands here
+        # For example: scp, ssh commands, or using specialized deployment actions
+
+    # Optional: Add deployment to production with approval
+    # - name: Deploy to production
+    #   uses: actions/github-script@v6
+    #   with:
+    #     script: |
+    #       github.rest.actions.createWorkflowDispatch({
+    #         owner: context.repo.owner,
+    #         repo: context.repo.repo,
+    #         workflow_id: 'deploy-production.yml',
+    #         ref: 'main'
+    #       })
