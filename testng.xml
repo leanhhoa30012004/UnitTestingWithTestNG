@@ -1,0 +1,9 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="TestNGDemoSuite">
+    <test name="MathUtilityTest">
+        <classes>
+            <class name="com.binh.util.mathutil.core.MathUtilityTest"/>
+
+        </classes>
+    </test>
+</suite>
