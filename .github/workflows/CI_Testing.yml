@@ -91,38 +91,24 @@ jobs:
           to: ${{ secrets.EMAIL_RECEIVER }}
           from: Test Bot <${{ secrets.EMAIL_USERNAME }}>
           content_type: text/html
-          body: |
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <meta charset="UTF-8">
-              <style>
-                table {
-                  border-collapse: collapse;
-                }
-                table, th, td {
-                  border: 1px solid black;
-                  padding: 6px;
-                }
-                th {
-                  background-color: #f2f2f2;
-                }
-              </style>
-            </head>
-            <body>
-              <h2>✅ TestNG Report Summary</h2>
-              <table>
-                <tr><th>Total</th><th>Passed</th><th>Failed</th><th>Skipped</th></tr>
-                <tr>
-                  <td>${{ steps.test_summary.outputs.TOTAL }}</td>
-                  <td style="color:green;">${{ steps.test_summary.outputs.PASSED }}</td>
-                  <td style="color:red;">${{ steps.test_summary.outputs.FAILED }}</td>
-                  <td style="color:orange;">${{ steps.test_summary.outputs.SKIPPED }}</td>
-                </tr>
-              </table>
-              <p>📎 The full HTML report is attached to this email.</p>
-            </body>
-            </html>
+body: |
+  <h2>✅ TestNG Report Summary</h2>
+  <table style="border-collapse: collapse;">
+    <tr>
+      <th style="border: 1px solid black; padding: 6px; background-color: #f2f2f2;">Total</th>
+      <th style="border: 1px solid black; padding: 6px; background-color: #f2f2f2;">Passed</th>
+      <th style="border: 1px solid black; padding: 6px; background-color: #f2f2f2;">Failed</th>
+      <th style="border: 1px solid black; padding: 6px; background-color: #f2f2f2;">Skipped</th>
+    </tr>
+    <tr>
+      <td style="border: 1px solid black; padding: 6px;">${{ steps.test_summary.outputs.TOTAL }}</td>
+      <td style="border: 1px solid black; padding: 6px; color:green;">${{ steps.test_summary.outputs.PASSED }}</td>
+      <td style="border: 1px solid black; padding: 6px; color:red;">${{ steps.test_summary.outputs.FAILED }}</td>
+      <td style="border: 1px solid black; padding: 6px; color:orange;">${{ steps.test_summary.outputs.SKIPPED }}</td>
+    </tr>
+  </table>
+  <p>📎 The full HTML report is attached to this email.</p>
+
           attachments: target/site/surefire-report.html
 
   deploy:
