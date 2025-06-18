@@ -1,5 +1,3 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
 
 name: Login Function Testing with TestNG (CI/CD) | © 2025 - Hoale
 
@@ -51,42 +49,40 @@ jobs:
         cache: maven
 
     - name: Run TestNG Tests
-      run: mvn test -DsuiteXmlFile=testng.xml    # Run TestNG tests using the suite XML file
+      run: |
+        mvn test -DsuiteXmlFile=testng.xml
+        echo "=============== TEST SUMMARY ==============="
+        echo "Tổng số test case đã chạy:"
+        grep -r "tests run" target/surefire-reports/*.txt | awk '{sum+=$3} END {print sum}'
+        echo "Số test case đã pass:"
+        grep -r "tests run" target/surefire-reports/*.txt | awk '{sum+=$3-$5} END {print sum}'
+        echo "Số test case đã fail:"
+        grep -r "tests run" target/surefire-reports/*.txt | awk '{sum+=$5} END {print sum}'
+        echo "============================================"
+        echo "Chi tiết các test case fail (nếu có):"
+        grep -r "FAILED" target/surefire-reports/TEST-*.xml -A 5 -B 5 || echo "Không có test case nào fail"
+        echo "============================================"
+
+    - name: Generate HTML Test Report
+      if: success() || failure()
+      run: |
+        mvn surefire-report:report-only
+        echo "Test report đã được tạo tại target/site/surefire-report.html"
 
     - name: Publish Test Report
       if: success() || failure()    # Run this step even if tests fail
       uses: actions/upload-artifact@v4
       with:
         name: testng-reports
-        path: target/surefire-reports    # TestNG report directory
+        path: |
+          target/surefire-reports
+          target/site
 
-  deploy:    # Deployment job for CD process
-    needs: [build, test]    # This job runs after build and test jobs complete successfully
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'    # Only deploy when changes are on main branch
-
-    steps:
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
+    - name: Publish Test Results
+      if: success() || failure()
+      uses: dorny/test-reporter@v1
       with:
-        name: java-application-package
-        path: staging
-
-    # Example deployment step - can be customized based on your deployment needs
-    - name: Deploy to staging server
-      run: |
-        echo "Deploying application to staging server..."
-        # Add your deployment commands here
-        # For example: scp, ssh commands, or using specialized deployment actions
-
-    # Optional: Add deployment to production with approval
-    # - name: Deploy to production
-    #   uses: actions/github-script@v6
-    #   with:
-    #     script: |
-    #       github.rest.actions.createWorkflowDispatch({
-    #         owner: context.repo.owner,
-    #         repo: context.repo.repo,
-    #         workflow_id: 'deploy-production.yml',
-    #         ref: 'main'
-    #       })
+        name: TestNG Results
+        path: target/surefire-reports/TEST-*.xml
+        reporter: java-junit
+        fail-on-error: false
