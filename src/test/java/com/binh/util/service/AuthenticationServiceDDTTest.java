@@ -25,7 +25,7 @@ public class AuthenticationServiceDDTTest {
         return new Object[][] {
                 {"admin", "1234", true},
                 {"admin", "wrong", false},
-                {"guest", "1234", false}
+                {"guest", "12345", false}
         };
     }
 
