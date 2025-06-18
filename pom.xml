@@ -32,17 +32,26 @@
     </dependencies>
     <build>
         <plugins>
+            <!-- Plugin để chạy TestNG -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.3</version>
+                <version>3.0.0-M9</version>
                 <configuration>
                     <suiteXmlFiles>
                         <suiteXmlFile>testng.xml</suiteXmlFile>
                     </suiteXmlFiles>
                 </configuration>
             </plugin>
+
+            <!-- Plugin tạo báo cáo HTML -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>3.0.0-M9</version>
+            </plugin>
         </plugins>
     </build>
+
 
 </project>

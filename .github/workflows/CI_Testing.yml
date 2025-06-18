@@ -21,10 +21,10 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run: mvn -B package --file pom.xml
+        run: mvn -B clean package --file pom.xml
 
       - name: Distribute JAR/WAR file
-        run: mkdir staging && cp target/*.jar staging
+        run: mkdir -p staging && cp target/*.jar staging
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -49,13 +49,6 @@ jobs:
       - name: Run TestNG Tests
         run: mvn test -DsuiteXmlFile=testng.xml
 
-      - name: Publish Raw TestNG XML Report
-        if: success() || failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: testng-raw-reports
-          path: target/surefire-reports
-
       - name: Generate HTML Test Report
         run: mvn surefire-report:report-only
 
@@ -73,12 +66,12 @@ jobs:
           SKIPPED=$(grep -oP 'Skipped: \d+' target/surefire-reports/*.txt | awk '{sum+=$2} END {print sum}')
           PASSED=$((TOTAL - FAILED - SKIPPED))
 
-          echo "TOTAL=$TOTAL" >> $GITHUB_OUTPUT
-          echo "PASSED=$PASSED" >> $GITHUB_OUTPUT
-          echo "FAILED=$FAILED" >> $GITHUB_OUTPUT
-          echo "SKIPPED=$SKIPPED" >> $GITHUB_OUTPUT
+          echo "TOTAL=$TOTAL" >> $GITHUB_ENV
+          echo "PASSED=$PASSED" >> $GITHUB_ENV
+          echo "FAILED=$FAILED" >> $GITHUB_ENV
+          echo "SKIPPED=$SKIPPED" >> $GITHUB_ENV
 
-      - name: Send Email with Report
+      - name: Send Email with Test Report
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
@@ -92,11 +85,10 @@ jobs:
           body: |
             ✅ TestNG Report Summary
 
-            Total Tests : ${{ steps.test_summary.outputs.TOTAL }}
-            Passed      : ${{ steps.test_summary.outputs.PASSED }}
-            Failed      : ${{ steps.test_summary.outputs.FAILED }}
-            Skipped     : ${{ steps.test_summary.outputs.SKIPPED }}
+            📋 Total Tests : ${{ env.TOTAL }}
+            ✅ Passed      : ${{ env.PASSED }}
+            ❌ Failed      : ${{ env.FAILED }}
+            ⚠️ Skipped     : ${{ env.SKIPPED }}
 
             📎 The full HTML report is attached to this email.
-
           attachments: target/site/surefire-report.html
