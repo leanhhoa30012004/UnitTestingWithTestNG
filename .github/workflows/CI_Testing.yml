@@ -32,8 +32,8 @@ jobs:
           name: java-application-package
           path: staging
 
-    test:
-    needs: build
+  test:
+    needs: build                 # Run test job after build is successful
     runs-on: ubuntu-latest
 
     steps:
@@ -47,17 +47,17 @@ jobs:
           cache: maven
 
       - name: Run TestNG Tests
-        run: mvn test -DsuiteXmlFile=testng.xml
+        run: mvn test -DsuiteXmlFile=testng.xml   # Run TestNG tests from XML suite
 
       - name: Publish Raw TestNG XML Report
-        if: success() || failure()
+        if: success() || failure()                # Run even if tests fail
         uses: actions/upload-artifact@v4
         with:
           name: testng-raw-reports
           path: target/surefire-reports
 
       - name: Generate HTML Test Report
-        run: mvn surefire-report:report-only
+        run: mvn surefire-report:report-only      # Generate HTML report
 
       - name: Upload HTML Test Report
         uses: actions/upload-artifact@v4
@@ -65,7 +65,6 @@ jobs:
           name: testng-html-report
           path: target/site/surefire-report.html
 
-      # ✅ Extract test summary from surefire reports
       - name: Extract test summary
         id: test_summary
         run: |
@@ -79,7 +78,6 @@ jobs:
           echo "FAILED=$FAILED" >> $GITHUB_OUTPUT
           echo "SKIPPED=$SKIPPED" >> $GITHUB_OUTPUT
 
-      # ✅ Send email with test summary in body
       - name: Send Email with Report
         uses: dawidd6/action-send-mail@v3
         with:
@@ -104,4 +102,3 @@ jobs:
             </table>
             <p>📎 The full HTML report is attached to this email.</p>
           attachments: target/site/surefire-report.html
-
