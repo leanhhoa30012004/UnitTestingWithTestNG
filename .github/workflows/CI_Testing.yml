@@ -71,6 +71,12 @@ jobs:
           echo "FAILED=$FAILED" >> $GITHUB_ENV
           echo "SKIPPED=$SKIPPED" >> $GITHUB_ENV
 
+      - name: Get committer email
+        id: committer
+        run: |
+          EMAIL=$(git log -1 --pretty=format:'%ae')
+          echo "COMMIT_EMAIL=$EMAIL" >> $GITHUB_ENV
+
       - name: Send Email with Test Report
         uses: dawidd6/action-send-mail@v3
         with:
@@ -79,7 +85,7 @@ jobs:
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "[CI Test Report] TestNG Results"
-          to: ${{ secrets.EMAIL_RECEIVER }}
+          to: ${{ env.COMMIT_EMAIL }}
           from: Test Bot <${{ secrets.EMAIL_USERNAME }}>
           content_type: text/plain
           body: |
