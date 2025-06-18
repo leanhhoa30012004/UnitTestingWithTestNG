@@ -57,7 +57,32 @@ jobs:
           path: target/surefire-reports
 
       - name: Generate HTML Test Report
-        run: mvn surefire-report:report-only   # Generate HTML report from test results
+        run: mvn surefire-report:report-only   # Generate HTML report from   test:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 24
+        uses: actions/setup-java@v3
+        with:
+          java-version: '24'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run TestNG Tests
+        run: mvn test -DsuiteXmlFile=testng.xml
+
+      - name: Publish Raw TestNG XML Report
+        if: success() || failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testng-raw-reports
+          path: target/surefire-reports
+
+      - name: Generate HTML Test Report
+        run: mvn surefire-report:report-only
 
       - name: Upload HTML Test Report
         uses: actions/upload-artifact@v4
@@ -65,36 +90,43 @@ jobs:
           name: testng-html-report
           path: target/site/surefire-report.html
 
+      # ✅ Extract test summary from surefire reports
+      - name: Extract test summary
+        id: test_summary
+        run: |
+          TOTAL=$(grep -oP 'Tests run: \d+' target/surefire-reports/*.txt | awk '{sum+=$3} END {print sum}')
+          FAILED=$(grep -oP 'Failures: \d+' target/surefire-reports/*.txt | awk '{sum+=$2} END {print sum}')
+          SKIPPED=$(grep -oP 'Skipped: \d+' target/surefire-reports/*.txt | awk '{sum+=$2} END {print sum}')
+          PASSED=$((TOTAL - FAILED - SKIPPED))
+
+          echo "TOTAL=$TOTAL" >> $GITHUB_OUTPUT
+          echo "PASSED=$PASSED" >> $GITHUB_OUTPUT
+          echo "FAILED=$FAILED" >> $GITHUB_OUTPUT
+          echo "SKIPPED=$SKIPPED" >> $GITHUB_OUTPUT
+
+      # ✅ Send email with test summary in body
       - name: Send Email with Report
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
           server_port: 465
-          username: ${{ secrets.EMAIL_USERNAME }}     # Sender email (set in secrets)
-          password: ${{ secrets.EMAIL_PASSWORD }}     # App password (Gmail recommended)
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "[CI Test Report] TestNG Results"
-          to: ${{ secrets.EMAIL_RECEIVER }}           # Receiver email (set in secrets)
+          to: ${{ secrets.EMAIL_RECEIVER }}
           from: Test Bot <${{ secrets.EMAIL_USERNAME }}>
           content_type: text/html
           body: |
-            <h3>TestNG Report</h3>
-            <p>Attached is the test result report.</p>
+            <h2>✅ TestNG Report Summary</h2>
+            <table border="1" cellpadding="6" cellspacing="0">
+              <tr><th>Total</th><th>Passed</th><th>Failed</th><th>Skipped</th></tr>
+              <tr>
+                <td>${{ steps.test_summary.outputs.TOTAL }}</td>
+                <td style="color:green;">${{ steps.test_summary.outputs.PASSED }}</td>
+                <td style="color:red;">${{ steps.test_summary.outputs.FAILED }}</td>
+                <td style="color:orange;">${{ steps.test_summary.outputs.SKIPPED }}</td>
+              </tr>
+            </table>
+            <p>📎 The full HTML report is attached to this email.</p>
           attachments: target/site/surefire-report.html
 
-  deploy:
-    needs: [build, test]               # Deploy only if build and test jobs succeed
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'  # Only deploy from main branch
-
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: java-application-package
-          path: staging
-
-      - name: Deploy to staging server
-        run: |
-          echo "Deploying application to staging server..."
-          # Add your actual deployment commands here
-          # Example: scp, ssh, or any deployment tool
