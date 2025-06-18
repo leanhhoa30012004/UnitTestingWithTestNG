@@ -2,16 +2,16 @@ name: Login Function Testing with TestNG (CI/CD) | © 2025 - Hoale
 
 on:
   push:
-    branches: [ "main" ]       # Trigger on push to main branch
+    branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]       # Trigger on pull request to main branch
+    branches: [ "main" ]
 
 jobs:
   build:
-    runs-on: ubuntu-latest     # Use Ubuntu runner for the build process
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4   # Checkout repository code
+      - uses: actions/checkout@v4
 
       - name: Set up JDK 24
         uses: actions/setup-java@v3
@@ -21,10 +21,10 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run: mvn -B package --file pom.xml   # Compile and package the project
+        run: mvn -B package --file pom.xml
 
       - name: Distribute JAR/WAR file
-        run: mkdir staging && cp target/*.jar staging   # Copy built JAR to staging folder
+        run: mkdir staging && cp target/*.jar staging
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -33,7 +33,7 @@ jobs:
           path: staging
 
   test:
-    needs: build                  # Run tests only after successful build
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
@@ -47,7 +47,7 @@ jobs:
           cache: maven
 
       - name: Run TestNG Tests
-        run: mvn test -DsuiteXmlFile=testng.xml   # Run tests using TestNG suite
+        run: mvn test -DsuiteXmlFile=testng.xml
 
       - name: Publish Raw TestNG XML Report
         if: success() || failure()
@@ -57,7 +57,7 @@ jobs:
           path: target/surefire-reports
 
       - name: Generate HTML Test Report
-        run: mvn surefire-report:report-only   # Generate HTML report from test results
+        run: mvn surefire-report:report-only
 
       - name: Upload HTML Test Report
         uses: actions/upload-artifact@v4
@@ -65,7 +65,6 @@ jobs:
           name: testng-html-report
           path: target/site/surefire-report.html
 
-      # ✅ Extract test summary from surefire reports
       - name: Extract test summary
         id: test_summary
         run: |
@@ -79,7 +78,6 @@ jobs:
           echo "FAILED=$FAILED" >> $GITHUB_OUTPUT
           echo "SKIPPED=$SKIPPED" >> $GITHUB_OUTPUT
 
-      # ✅ Send email with test summary (styled HTML)
       - name: Send Email with Report
         uses: dawidd6/action-send-mail@v3
         with:
@@ -91,24 +89,23 @@ jobs:
           to: ${{ secrets.EMAIL_RECEIVER }}
           from: Test Bot <${{ secrets.EMAIL_USERNAME }}>
           content_type: text/html
-body: |
-  <h2>✅ TestNG Report Summary</h2>
-  <table style="border-collapse: collapse;">
-    <tr>
-      <th style="border: 1px solid black; padding: 6px; background-color: #f2f2f2;">Total</th>
-      <th style="border: 1px solid black; padding: 6px; background-color: #f2f2f2;">Passed</th>
-      <th style="border: 1px solid black; padding: 6px; background-color: #f2f2f2;">Failed</th>
-      <th style="border: 1px solid black; padding: 6px; background-color: #f2f2f2;">Skipped</th>
-    </tr>
-    <tr>
-      <td style="border: 1px solid black; padding: 6px;">${{ steps.test_summary.outputs.TOTAL }}</td>
-      <td style="border: 1px solid black; padding: 6px; color:green;">${{ steps.test_summary.outputs.PASSED }}</td>
-      <td style="border: 1px solid black; padding: 6px; color:red;">${{ steps.test_summary.outputs.FAILED }}</td>
-      <td style="border: 1px solid black; padding: 6px; color:orange;">${{ steps.test_summary.outputs.SKIPPED }}</td>
-    </tr>
-  </table>
-  <p>📎 The full HTML report is attached to this email.</p>
-
+          body: |
+            <h2>✅ TestNG Report Summary</h2>
+            <table style="border-collapse: collapse; font-family: Arial, sans-serif;">
+              <tr>
+                <th style="border: 1px solid black; padding: 6px; background-color: #f2f2f2;">Total</th>
+                <th style="border: 1px solid black; padding: 6px; background-color: #f2f2f2;">Passed</th>
+                <th style="border: 1px solid black; padding: 6px; background-color: #f2f2f2;">Failed</th>
+                <th style="border: 1px solid black; padding: 6px; background-color: #f2f2f2;">Skipped</th>
+              </tr>
+              <tr>
+                <td style="border: 1px solid black; padding: 6px;">${{ steps.test_summary.outputs.TOTAL }}</td>
+                <td style="border: 1px solid black; padding: 6px; color:green;">${{ steps.test_summary.outputs.PASSED }}</td>
+                <td style="border: 1px solid black; padding: 6px; color:red;">${{ steps.test_summary.outputs.FAILED }}</td>
+                <td style="border: 1px solid black; padding: 6px; color:orange;">${{ steps.test_summary.outputs.SKIPPED }}</td>
+              </tr>
+            </table>
+            <p style="font-family: Arial;">📎 The full HTML report is attached to this email.</p>
           attachments: target/site/surefire-report.html
 
   deploy:
@@ -126,4 +123,4 @@ body: |
       - name: Deploy to staging server
         run: |
           echo "Deploying application to staging server..."
-          # Add your actual deployment commands here
+          # Add your actual deployment commands here (e.g., SCP, SSH, FTP, etc.)
