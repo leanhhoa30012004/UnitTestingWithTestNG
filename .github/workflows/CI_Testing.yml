@@ -88,39 +88,15 @@ jobs:
           subject: "[CI Test Report] TestNG Results"
           to: ${{ secrets.EMAIL_RECEIVER }}
           from: Test Bot <${{ secrets.EMAIL_USERNAME }}>
-          content_type: text/html
+          content_type: text/plain
           body: |
-            <h2>✅ TestNG Report Summary</h2>
-            <table style="border-collapse: collapse; font-family: Arial, sans-serif;">
-              <tr>
-                <th style="border: 1px solid black; padding: 6px; background-color: #f2f2f2;">Total</th>
-                <th style="border: 1px solid black; padding: 6px; background-color: #f2f2f2;">Passed</th>
-                <th style="border: 1px solid black; padding: 6px; background-color: #f2f2f2;">Failed</th>
-                <th style="border: 1px solid black; padding: 6px; background-color: #f2f2f2;">Skipped</th>
-              </tr>
-              <tr>
-                <td style="border: 1px solid black; padding: 6px;">${{ steps.test_summary.outputs.TOTAL }}</td>
-                <td style="border: 1px solid black; padding: 6px; color:green;">${{ steps.test_summary.outputs.PASSED }}</td>
-                <td style="border: 1px solid black; padding: 6px; color:red;">${{ steps.test_summary.outputs.FAILED }}</td>
-                <td style="border: 1px solid black; padding: 6px; color:orange;">${{ steps.test_summary.outputs.SKIPPED }}</td>
-              </tr>
-            </table>
-            <p style="font-family: Arial;">📎 The full HTML report is attached to this email.</p>
+            ✅ TestNG Report Summary
+
+            Total Tests : ${{ steps.test_summary.outputs.TOTAL }}
+            Passed      : ${{ steps.test_summary.outputs.PASSED }}
+            Failed      : ${{ steps.test_summary.outputs.FAILED }}
+            Skipped     : ${{ steps.test_summary.outputs.SKIPPED }}
+
+            📎 The full HTML report is attached to this email.
+
           attachments: target/site/surefire-report.html
-
-  deploy:
-    needs: [build, test]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: java-application-package
-          path: staging
-
-      - name: Deploy to staging server
-        run: |
-          echo "Deploying application to staging server..."
-          # Add your actual deployment commands here (e.g., SCP, SSH, FTP, etc.)
