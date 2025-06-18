@@ -34,4 +34,4 @@ This repository contains a comprehensive suite for testing login functionalities
 - Maven 3.6 or higher
 - Git
 ### Connect me via: leanhhoa30012004@gmail.com
-#### &#169; 2025 hoa.le
+#### &#169; 2025 hoa.le.
