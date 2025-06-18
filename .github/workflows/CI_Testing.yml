@@ -1,97 +1,91 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: 
-
 name: Login Function Testing with TestNG (CI/CD) | © 2025 - Hoale
 
 on:
   push:
-    branches: [ "main" ] # Trigger workflow when code is pushed to main branch
+    branches: [ "main" ]       # Trigger on push to main branch
   pull_request:
-    branches: [ "main" ] # Trigger workflow when pull request is created to main branch
-
-permissions:
-  contents: read
-  actions: read
-  checks: write  # This permission is needed to create check runs for test reports
+    branches: [ "main" ]       # Trigger on pull request to main branch
 
 jobs:
-  build: # Build job for CI process
-    runs-on: ubuntu-latest # Using Ubuntu virtual machine for building
+  build:
+    runs-on: ubuntu-latest     # Use Ubuntu runner for the build process
+
     steps:
-      - uses: actions/checkout@v4 # Checkout code from repository
+      - uses: actions/checkout@v4   # Checkout repository code
 
       - name: Set up JDK 24
-        uses: actions/setup-java@v3 # Setup Java environment
+        uses: actions/setup-java@v3
         with:
-          java-version: '24' # Using JDK 24 as requested
-          distribution: 'temurin' # Using Temurin distribution (Eclipse Adoptium)
-          cache: maven # Cache Maven dependencies
+          java-version: '24'
+          distribution: 'temurin'
+          cache: maven
 
       - name: Build with Maven
-        run: mvn -B package --file pom.xml # Build project with Maven (will run TestNG tests)
-        continue-on-error: true  # Continue workflow even if tests fail
+        run: mvn -B package --file pom.xml   # Compile and package the project
 
-      - name: Distribute jar-war file
-        run: mkdir staging && cp target/*.jar staging # Create staging directory and copy JAR files
+      - name: Distribute JAR/WAR file
+        run: mkdir staging && cp target/*.jar staging   # Copy built JAR to staging folder
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: java-application-package # Name of the downloadable artifact
-          path: staging # Path to the artifacts
+          name: java-application-package
+          path: staging
 
-      - name: Upload test results
-        if: always()  # Always upload test results, regardless of success or failure
-        uses: actions/upload-artifact@v4
-        with:
-          name: testng-results
-          path: target/surefire-reports  # Directory containing TestNG reports
-
-  test-report: # Dedicated job for creating detailed test reports
-    needs: build
+  test:
+    needs: build                  # Run tests only after successful build
     runs-on: ubuntu-latest
-    if: always()  # Always run this job, regardless of build success or failure
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download test results
-        uses: actions/download-artifact@v4
+      - name: Set up JDK 24
+        uses: actions/setup-java@v3
         with:
-          name: testng-results
-          path: target/surefire-reports
+          java-version: '24'
+          distribution: 'temurin'
+          cache: maven
 
-      - name: Publish TestNG Report
-        uses: dorny/test-reporter@v2
-        if: always()  # Always run this step
-        with:
-          name: TestNG Test Results
-          path: 'target/surefire-reports/testng-results.xml'
-          reporter: java-junit  # TestNG uses a format compatible with JUnit
-          fail-on-error: false  # Don't fail the workflow if test cases have errors
-          list-suites: 'all'    # List all test suites
-          list-tests: 'all'     # List all test cases
-          max-annotations: 50   # Display up to 50 annotations for errors
-          use-actions-summary: true  # Show summary in GitHub Actions Summary
+      - name: Run TestNG Tests
+        run: mvn test -DsuiteXmlFile=testng.xml   # Run tests using TestNG suite
 
-      - name: Generate HTML Test Report
-        if: always()
-        run: |
-          # Install tools to create HTML report from TestNG results
-          mvn surefire-report:report-only
-          mkdir -p test-reports
-          cp target/site/surefire-report.html test-reports/
-
-      - name: Upload HTML Test Report
-        if: always()
+      - name: Publish Raw TestNG XML Report
+        if: success() || failure()    # Run this step even if tests fail
         uses: actions/upload-artifact@v4
         with:
-          name: test-html-report
-          path: test-reports
+          name: testng-raw-reports
+          path: target/surefire-reports
 
-  deploy: # Deployment job for CD process
-    needs: [build, test-report] # This job runs after build and test-report jobs complete
+      - name: Generate HTML Test Report
+        run: mvn surefire-report:report-only   # Generate HTML report from test results
+
+      - name: Upload HTML Test Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: testng-html-report
+          path: target/site/surefire-report.html
+
+      - name: Send Email with Report
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}     # Sender email (set in secrets)
+          password: ${{ secrets.EMAIL_PASSWORD }}     # App password (Gmail recommended)
+          subject: "[CI Test Report] TestNG Results"
+          to: ${{ secrets.EMAIL_RECEIVER }}           # Receiver email (set in secrets)
+          from: Test Bot <${{ secrets.EMAIL_USERNAME }}>
+          content_type: text/html
+          body: |
+            <h3>TestNG Report</h3>
+            <p>Attached is the test result report.</p>
+          attachments: target/site/surefire-report.html
+
+  deploy:
+    needs: [build, test]               # Deploy only if build and test jobs succeed
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && success() # Only deploy when changes are on main branch and all tests pass
+    if: github.ref == 'refs/heads/main'  # Only deploy from main branch
+
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -99,9 +93,8 @@ jobs:
           name: java-application-package
           path: staging
 
-      # Example deployment step - can be customized based on your deployment needs
       - name: Deploy to staging server
         run: |
           echo "Deploying application to staging server..."
-          # Add your deployment commands here
-          # For example: scp, ssh commands, or using specialized deployment actions
+          # Add your actual deployment commands here
+          # Example: scp, ssh, or any deployment tool
