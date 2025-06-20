@@ -83,7 +83,7 @@ jobs:
       - name: Convert HTML report to PDF
         run: |
           mkdir -p pdf-report
-          wkhtmltopdf target/site/surefire-report.html pdf-report/testng-report.pdf
+          wkhtmltopdf --enable-local-file-access target/site/surefire-report.html pdf-report/testng-report.pdf
 
       - name: Send PDF Test Report to committer
         uses: dawidd6/action-send-mail@v3
