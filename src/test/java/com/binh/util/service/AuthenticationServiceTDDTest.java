@@ -11,53 +11,18 @@ import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertTrue;
 
 public class AuthenticationServiceTDDTest {
-//    @Mock
-//    private UserRepository userRepository;
-//
-//    @InjectMocks
-//    private AuthenticationService authService;
-//
-//    @BeforeMethod
-//    public void setUp() {
-//        MockitoAnnotations.openMocks(this);
-//    }
-//
-//    @Test
-//    public void testLoginSuccess() {
-//        when(userRepository.findByUsername("admin"))
-//                .thenReturn(new User("admin", "admin123"));
-//
-//        boolean result = authService.login("admin", "admin123");
-//        Assert.assertTrue(result);
-//    }
-//
-//    @Test
-//    public void testLoginWrongPassword() {
-//        when(userRepository.findByUsername("admin"))
-//                .thenReturn(new User("admin", "admin123"));
-//
-//        boolean result = authService.login("admin", "wrongpass");
-//        Assert.assertFalse(result);
-//    }
-//
-//    @Test
-//    public void testLoginUserNotFound() {
-//        when(userRepository.findByUsername("ghost")).thenReturn(null);
-//
-//        boolean result = authService.login("ghost", "whatever");
-//        Assert.assertFalse(result);
-//    }
 
     private UserRepository userRepository;
     private AuthenticationService authService;
 
-    @BeforeMethod
+    @BeforeMethod(alwaysRun = true)
     public void setUp() {
         userRepository = mock(UserRepository.class);
         authService = new AuthenticationService(userRepository);
     }
 
-    @Test
+    @Test(groups = {"login"})
+//    @Test
     public void testLoginSuccess() {
         when(userRepository.findByUsername("admin"))
                 .thenReturn(new User("admin", "1234"));
@@ -66,7 +31,9 @@ public class AuthenticationServiceTDDTest {
         assertTrue(result);
     }
 
-    @Test
+//    @Test
+//    @Test(dependsOnMethods = {"testLoginSuccess"}, groups = {"login"})
+    @Test(groups ={"login"} )
     public void testLoginWrongPassword() {
         when(userRepository.findByUsername("admin"))
                 .thenReturn(new User("admin", "1234"));
@@ -75,7 +42,9 @@ public class AuthenticationServiceTDDTest {
         assertFalse(result);
     }
 
-    @Test
+//    @Test(dependsOnMethods = {"testLoginWrongPassword"}, groups = {"login"})
+    @Test(groups ={"login"} )
+//    @Test
     public void testLoginUserNotFound() {
         when(userRepository.findByUsername("notfound"))
                 .thenReturn(null);

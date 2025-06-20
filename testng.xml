@@ -8,6 +8,20 @@
         </groups>
         <classes>
             <class name="com.binh.util.service.AuthenticationServiceDDTTest"/>
+            <class name="com.binh.util.service.AuthenticationServiceTDDTest"/>
         </classes>
     </test>
+    <test name="LoginTDDTest">
+        <classes>
+            <class name="com.binh.util.service.AuthenticationServiceTDDTest"/>
+        </classes>
+    </test>
+
+        <test name="LoginDDTTest">
+            <classes>
+                <class name="com.binh.util.service.AuthenticationServiceDDTTest"/>
+            </classes>
+        </test>
 </suite>
+
+
