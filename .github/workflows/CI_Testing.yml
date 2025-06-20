@@ -2,9 +2,9 @@ name: Login Function Testing with TestNG (CI/CD) | © 2025 - Hoale
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
   pull_request:
-    branches: ["main"]
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -43,6 +43,17 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Install ReportGenerator tool
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.4.8
+
+      - name: Add .dotnet tools to PATH
+        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
       - name: Run tests and generate coverage
         run: mvn test -DsuiteXmlFile=testng.xml
 
@@ -52,20 +63,8 @@ jobs:
       - name: Generate JaCoCo Coverage Report
         run: mvn jacoco:report
 
-      - name: Install .NET SDK
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '6.x'
-
-      - name: Install reportgenerator tool
-        run: dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.*
-
-      - name: Add tool to PATH
-        run: echo "${HOME}/.dotnet/tools" >> $GITHUB_PATH
-
-      - name: Generate HTML coverage report with charts
+      - name: Generate HTML & chart coverage report
         run: |
-          mkdir -p coverage-report
           reportgenerator \
             -reports:target/site/jacoco/jacoco.xml \
             -targetdir:coverage-report \
@@ -98,10 +97,18 @@ jobs:
       - name: Install wkhtmltopdf
         run: sudo apt-get update && sudo apt-get install -y wkhtmltopdf
 
-      - name: Convert coverage HTML to PDF
+      - name: Combine HTML reports into one
+        run: |
+          mkdir -p merged-report
+          echo "<html><head><title>Test Report</title><style>body{font-family:sans-serif;padding:20px;}h1{color:#2c3e50;}iframe{width:100%;height:800px;border:none;}hr{margin:40px 0;}</style></head><body>" > merged-report/combined.html
+          echo "<h1>TestNG Report</h1><iframe src='../target/site/surefire-report.html'></iframe><hr>" >> merged-report/combined.html
+          echo "<h1>Coverage Report</h1><iframe src='../coverage-report/index.htm'></iframe>" >> merged-report/combined.html
+          echo "</body></html>" >> merged-report/combined.html
+
+      - name: Convert combined HTML to PDF
         run: |
           mkdir -p pdf-report
-          wkhtmltopdf --enable-local-file-access coverage-report/index.htm pdf-report/coverage-report.pdf
+          wkhtmltopdf --enable-local-file-access merged-report/combined.html pdf-report/test-coverage-report.pdf
 
       - name: Send PDF report to committer
         uses: dawidd6/action-send-mail@v3
@@ -123,4 +130,4 @@ jobs:
             ⚠️ Skipped     : ${{ env.SKIPPED }}
 
             📎 PDF report is attached.
-          attachments: pdf-report/coverage-report.pdf
+          attachments: pdf-report/test-coverage-report.pdf
