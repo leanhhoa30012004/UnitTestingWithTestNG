@@ -2,9 +2,9 @@ name: Login Function Testing with TestNG (CI/CD) | © 2025 - Hoale
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
@@ -52,16 +52,21 @@ jobs:
       - name: Generate JaCoCo Coverage Report
         run: mvn jacoco:report
 
-      - name: Download ReportGenerator (standalone)
-        run: |
-          wget https://github.com/danielpalme/ReportGenerator/releases/download/v5.2.4/ReportGenerator_5.2.4_linux-x64.zip -O reportgen.zip
-          unzip reportgen.zip -d reportgenerator
-          chmod +x reportgenerator/ReportGenerator
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.x'
 
-      - name: Generate coverage HTML report with chart
+      - name: Install reportgenerator tool
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.*
+
+      - name: Add tool to PATH
+        run: echo "${HOME}/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: Generate HTML coverage report with charts
         run: |
           mkdir -p coverage-report
-          reportgenerator/ReportGenerator \
+          reportgenerator \
             -reports:target/site/jacoco/jacoco.xml \
             -targetdir:coverage-report \
             -reporttypes:Html
@@ -93,10 +98,10 @@ jobs:
       - name: Install wkhtmltopdf
         run: sudo apt-get update && sudo apt-get install -y wkhtmltopdf
 
-      - name: Convert HTML coverage to PDF
+      - name: Convert coverage HTML to PDF
         run: |
           mkdir -p pdf-report
-          wkhtmltopdf --enable-local-file-access coverage-report/index.htm pdf-report/testng-coverage-report.pdf
+          wkhtmltopdf --enable-local-file-access coverage-report/index.htm pdf-report/coverage-report.pdf
 
       - name: Send PDF report to committer
         uses: dawidd6/action-send-mail@v3
@@ -117,5 +122,5 @@ jobs:
             ❌ Failed      : ${{ env.FAILED }}
             ⚠️ Skipped     : ${{ env.SKIPPED }}
 
-            📎 PDF coverage report is attached.
-          attachments: pdf-report/testng-coverage-report.pdf
+            📎 PDF report is attached.
+          attachments: pdf-report/coverage-report.pdf
