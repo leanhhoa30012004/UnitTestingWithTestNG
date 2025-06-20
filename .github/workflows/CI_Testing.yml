@@ -214,4 +214,4 @@ jobs:
             ⚠️ Skipped     : ${{ env.SKIPPED }}
 
             📎 PDF report is attached.
-          attachments: pdf-report/report.pdf
+          attachments: pdf-report/report.pdf 
