@@ -43,8 +43,8 @@ public class AuthenticationServiceTDDTest {
     }
 
 //    @Test(dependsOnMethods = {"testLoginWrongPassword"}, groups = {"login"})
-    @Test(groups ={"login"} )
 //    @Test
+    @Test(groups ={"login"} )
     public void testLoginUserNotFound() {
         when(userRepository.findByUsername("notfound"))
                 .thenReturn(null);
