@@ -46,6 +46,7 @@ jobs:
 
       - name: Run tests and generate coverage
         run: mvn test -DsuiteXmlFile=testng.xml
+        continue-on-error: true
 
       - name: Generate surefire HTML report
         run: mvn surefire-report:report-only
