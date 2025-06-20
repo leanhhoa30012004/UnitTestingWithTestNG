@@ -157,8 +157,16 @@ jobs:
       - name: Generate surefire HTML report
         run: mvn surefire-report:report-only
 
-      - name: Generate JaCoCo coverage report
-        run: mvn jacoco:report
+      - name: Generate JaCoCo HTML Report with Pie Chart
+        run: |
+          sudo apt-get install -y mono-devel
+          wget https://github.com/danielpalme/ReportGenerator/releases/download/v5.2.4/ReportGenerator_5.2.4.zip
+          unzip ReportGenerator_5.2.4.zip -d reportgenerator
+          mono reportgenerator/ReportGenerator.exe \
+            -reports:target/site/jacoco/jacoco.xml \
+            -targetdir:coverage-report \
+            -reporttypes:Html
+
 
       - name: Extract test summary
         id: test_summary
@@ -189,10 +197,9 @@ jobs:
           echo "<h1>JaCoCo Coverage</h1>" >> merged-report/combined.html
           cat target/site/jacoco/index.html >> merged-report/combined.html
 
-      - name: Convert HTML to PDF
+      - name: Convert coverage HTML report to PDF
         run: |
-          mkdir -p pdf-report
-          wkhtmltopdf --enable-local-file-access merged-report/combined.html pdf-report/report.pdf
+          wkhtmltopdf --enable-local-file-access coverage-report/index.html pdf-report/coverage-report.pdf
 
       - name: Send PDF report to committer
         uses: dawidd6/action-send-mail@v3
