@@ -157,16 +157,26 @@ jobs:
       - name: Generate surefire HTML report
         run: mvn surefire-report:report-only
 
-      - name: Generate JaCoCo HTML Report with Pie Chart
+      - name: Generate JaCoCo Coverage Report
+        run: mvn jacoco:report
+
+      - name: Download ReportGenerator
         run: |
-          sudo apt-get install -y mono-devel
-          wget https://github.com/danielpalme/ReportGenerator/releases/download/v5.2.4/ReportGenerator_5.2.4.zip
-          unzip ReportGenerator_5.2.4.zip -d reportgenerator
-          mono reportgenerator/ReportGenerator.exe \
+          wget https://github.com/danielpalme/ReportGenerator/releases/download/v5.2.4/ReportGenerator_5.2.4.zip -O reportgen.zip
+          unzip reportgen.zip -d reportgenerator
+
+      - name: Generate HTML & chart coverage report
+        run: |
+          dotnet reportgenerator/ReportGenerator.dll \
             -reports:target/site/jacoco/jacoco.xml \
             -targetdir:coverage-report \
             -reporttypes:Html
 
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: coverage-report/index.htm
 
       - name: Extract test summary
         id: test_summary
