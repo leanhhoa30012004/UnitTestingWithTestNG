@@ -129,12 +129,22 @@ jobs:
           from: Test Bot <${{ secrets.EMAIL_USERNAME }}>
           content_type: text/plain
           body: |
-            ✅ TestNG Report Summary
-
-            📋 Total Tests : ${{ env.TOTAL }}
-            ✅ Passed      : ${{ env.PASSED }}
-            ❌ Failed       : ${{ env.FAILED }}
-            ⚠️ Skipped     : ${{ env.SKIPPED }}
-            🔗 View All report here: https://leanhhoa30012004.github.io/UnitTestingWithTestNG/
-            📎 PDF report is attached.
-          attachments: pdf-report/final-report.pdf
+            📢 **Unit Testing Report Summary** | © 2025 - Hoale
+            ───────────────────────────────────────────────
+            
+            🧪 **Test Execution Overview:**
+            ┌────────────────────────────┐
+            │ 📋 Total Tests :  ${{ env.TOTAL }}          │
+            │ ✅ Passed      :  ${{ env.PASSED }}          │
+            │ ❌ Failed      :  ${{ env.FAILED }}          │
+            │ ⚠️ Skipped     :  ${{ env.SKIPPED }}          │
+            └────────────────────────────┘
+            
+            🔗 **Full Report (HTML):**
+            https://leanhhoa30012004.github.io/UnitTestingWithTestNG/
+            
+            📎 **PDF Report:** See attached file `final-report.pdf`
+            
+            🛠 *This is an automated message sent by CI/CD pipeline.*
+            
+           attachments: pdf-report/final-report.pdf
