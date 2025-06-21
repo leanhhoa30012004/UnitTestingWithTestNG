@@ -23,7 +23,7 @@ public class AuthenticationServiceDDTTest {
     @DataProvider(name = "loginData")
     public Object[][] loginData() {
         return new Object[][] {
-                {"admin", "1234", true},
+                {"admin", "12345", true},
                 {"admin", "wrong", false},
                 {"guest", "1234", false}
         };
