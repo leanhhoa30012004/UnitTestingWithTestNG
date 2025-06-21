@@ -132,18 +132,23 @@ jobs:
           server_port: 465
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: "[CI Test Report] ✅ Unit Test + Coverage Report"
+          subject: "[CI Test Report] Unit Test and Coverage Report"
           to: ${{ env.COMMIT_EMAIL }}
           from: Test Bot <${{ secrets.EMAIL_USERNAME }}>
-          content_type: text/html
+          content_type: text/plain
           body: |
-            <h2>✅ TestNG Report Summary</h2>
-            <ul>
-              <li>📋 <b>Total Tests</b>: <span style="color:blue;">${{ env.TOTAL }}</span></li>
-              <li>✅ <b>Passed</b>: <span style="color:green;">${{ env.PASSED }}</span></li>
-              <li>❌ <b>Failed</b>: <span style="color:red;">${{ env.FAILED }}</span></li>
-              <li>⚠️ <b>Skipped</b>: <span style="color:orange;">${{ env.SKIPPED }}</span></li>
-            </ul>
-            <p>🔗 <a href="https://leanhhoa30012004.github.io/UnitTestingWithTestNG/" target="_blank">View Full Report (HTML)</a></p>
-            <p>📎 PDF Report is attached to this email.</p>
+            ✅ TestNG Report Summary
+
+
+            📋 Total Tests : ${{ env.TOTAL }}
+            ✅ Passed       : ${{ env.PASSED }}
+            ❌ Failed         : ${{ env.FAILED }}
+            ⚠️ Skipped     : ${{ env.SKIPPED }}
+            
+            🔗 View All report here: https://leanhhoa30012004.github.io/UnitTestingWithTestNG/
           attachments: pdf-report/final-report.pdf
+      - name: Fail job if there are test failures
+        if: env.FAILED != '0'
+        run: |
+          echo "❌ Test failures detected: $FAILED. Failing the job as expected."
+          exit 1
