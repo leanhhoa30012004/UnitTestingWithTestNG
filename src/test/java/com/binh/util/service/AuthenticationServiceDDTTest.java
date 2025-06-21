@@ -38,5 +38,6 @@ public class AuthenticationServiceDDTTest {
 
         boolean result = authService.login(username, password);
         assertEquals(result, expected, "Failed on: " + username + "/" + password);
+
     }
 }
