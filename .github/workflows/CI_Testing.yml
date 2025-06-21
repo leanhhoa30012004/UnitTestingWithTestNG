@@ -21,8 +21,7 @@ jobs:
           cache: maven
 
       - name: Build with Maven and JaCoCo
-        run: mvn clean verify -DsuiteXmlFile=testng.xml
-        continue-on-error: true
+        run: mvn clean verify -DsuiteXmlFile=testng.xml || true
 
       - name: Upload JAR
         uses: actions/upload-artifact@v4
@@ -45,8 +44,7 @@ jobs:
           cache: maven
 
       - name: Run tests and generate coverage
-        run: mvn test -DsuiteXmlFile=testng.xml
-        continue-on-error: true
+        run: mvn test -DsuiteXmlFile=testng.xml || true
 
       - name: Generate surefire HTML report
         run: mvn surefire-report:report-only
@@ -135,7 +133,7 @@ jobs:
 
             📋 Total Tests : ${{ env.TOTAL }}
             ✅ Passed      : ${{ env.PASSED }}
-            ❌ Failed      : ${{ env.FAILED }}
+            ❌ Failed       : ${{ env.FAILED }}
             ⚠️ Skipped     : ${{ env.SKIPPED }}
             🔗 View All report here: https://leanhhoa30012004.github.io/UnitTestingWithTestNG/
             📎 PDF report is attached.
