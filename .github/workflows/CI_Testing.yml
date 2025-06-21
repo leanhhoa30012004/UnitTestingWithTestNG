@@ -132,29 +132,18 @@ jobs:
           server_port: 465
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: "[CI Test Report] Unit Test and Coverage Report"
+          subject: "[CI Test Report] ✅ Unit Test + Coverage Report"
           to: ${{ env.COMMIT_EMAIL }}
           from: Test Bot <${{ secrets.EMAIL_USERNAME }}>
           content_type: text/html
-          body: >-
-            <!DOCTYPE html>
-            <html>
-              <head>
-                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-                <style>
-                  body { font-family: Arial, sans-serif; line-height: 1.5; }
-                  .passed { color: green; }
-                  .failed { color: red; }
-                  .skipped { color: orange; }
-                </style>
-              </head>
-              <body>
-                <h2>📢 Unit Testing Report Summary</h2>
-                <p>📋 <strong>Total Tests:</strong> ${{ env.TOTAL }}</p>
-                <p class="passed">✅ <strong>Passed:</strong> ${{ env.PASSED }}</p>
-                <p class="failed">❌ <strong>Failed:</strong> ${{ env.FAILED }}</p>
-                <p class="skipped">⚠️ <strong>Skipped:</strong> ${{ env.SKIPPED }}</p>
-                <p>🔗 <a href="https://leanhhoa30012004.github.io/UnitTestingWithTestNG/">View Full Report</a></p>
-              </body>
-            </html>
+          body: |
+            <h2>✅ TestNG Report Summary</h2>
+            <ul>
+              <li>📋 <b>Total Tests</b>: <span style="color:blue;">${{ env.TOTAL }}</span></li>
+              <li>✅ <b>Passed</b>: <span style="color:green;">${{ env.PASSED }}</span></li>
+              <li>❌ <b>Failed</b>: <span style="color:red;">${{ env.FAILED }}</span></li>
+              <li>⚠️ <b>Skipped</b>: <span style="color:orange;">${{ env.SKIPPED }}</span></li>
+            </ul>
+            <p>🔗 <a href="https://leanhhoa30012004.github.io/UnitTestingWithTestNG/" target="_blank">View Full Report (HTML)</a></p>
+            <p>📎 PDF Report is attached to this email.</p>
           attachments: pdf-report/final-report.pdf
