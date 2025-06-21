@@ -33,7 +33,7 @@
     </dependencies>
     <build>
         <plugins>
-            <!-- Plugin để chạy TestNG -->
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -64,7 +64,6 @@
                 </executions>
             </plugin>
 
-            <!-- Plugin tạo báo cáo HTML -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
