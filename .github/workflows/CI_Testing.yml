@@ -129,11 +129,11 @@ jobs:
           to: ${{ env.COMMIT_EMAIL }}
           from: Test Bot <${{ secrets.EMAIL_USERNAME }}>
           content_type: text/html
-          body: |
-
+          body: >-
             <!DOCTYPE html>
             <html>
               <head>
+                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
                 <style>
                   body { font-family: Arial, sans-serif; line-height: 1.5; }
                   .passed { color: green; }
