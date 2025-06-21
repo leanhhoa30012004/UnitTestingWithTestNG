@@ -130,12 +130,12 @@ jobs:
           from: Test Bot <${{ secrets.EMAIL_USERNAME }}>
           content_type: text/html
           body: |
-            
+
             <!DOCTYPE html>
             <html>
               <head>
                 <style>
-                  body { font-family: Arial, sans-serif; line-height: 1.6; }
+                  body { font-family: Arial, sans-serif; line-height: 1.5; }
                   .passed { color: green; }
                   .failed { color: red; }
                   .skipped { color: orange; }
