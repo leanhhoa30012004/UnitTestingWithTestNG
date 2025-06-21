@@ -127,23 +127,43 @@ jobs:
           subject: "[CI Test Report] Unit Test and Coverage Report"
           to: ${{ env.COMMIT_EMAIL }}
           from: Test Bot <${{ secrets.EMAIL_USERNAME }}>
-          content_type: text/plain
+          content_type: text/html
           body: |
-            📢 Unit Testing Report Summary | © 2025 - Hoale
-            ───────────────────────────────────────────────
-
-            🧪 Test Execution Overview:
-            ┌────────────────────────────┐
-            │ 📋 Total Tests :  ${{ env.TOTAL }}           │
-            │ ✅ Passed      :  ${{ env.PASSED }}           │
-            │ ❌ Failed      :  ${{ env.FAILED }}           │
-            │ ⚠️ Skipped     :  ${{ env.SKIPPED }}           │
-            └────────────────────────────┘
-
-            🔗 Full HTML Report:
-            https://leanhhoa30012004.github.io/UnitTestingWithTestNG/
-
-            📎 PDF Report: See attached file `final-report.pdf`
-
-            🛠 This is an automated message sent by the CI/CD pipeline.
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <style>
+                body { font-family: Arial, sans-serif; color: #333; }
+                .summary-table {
+                  border-collapse: collapse;
+                  width: 100%;
+                  margin-top: 10px;
+                }
+                .summary-table th, .summary-table td {
+                  border: 1px solid #ccc;
+                  padding: 8px 12px;
+                  text-align: left;
+                }
+                .summary-table th {
+                  background-color: #f2f2f2;
+                }
+                .success { color: green; }
+                .fail { color: red; }
+                .skip { color: orange; }
+              </style>
+            </head>
+            <body>
+              <h2>📢 Unit Testing Report Summary | © 2025 - Hoale</h2>
+              <table class="summary-table">
+                <tr><th>Total Tests</th><td>${{ env.TOTAL }}</td></tr>
+                <tr><th class="success">✅ Passed</th><td>${{ env.PASSED }}</td></tr>
+                <tr><th class="fail">❌ Failed</th><td>${{ env.FAILED }}</td></tr>
+                <tr><th class="skip">⚠️ Skipped</th><td>${{ env.SKIPPED }}</td></tr>
+              </table>
+              <p>🔗 <a href="https://leanhhoa30012004.github.io/UnitTestingWithTestNG/" target="_blank">View Full HTML Report</a></p>
+              <p>📎 PDF Report is attached.</p>
+              <hr />
+              <small>This is an automated message sent by CI/CD workflow.</small>
+            </body>
+            </html>
           attachments: pdf-report/final-report.pdf
