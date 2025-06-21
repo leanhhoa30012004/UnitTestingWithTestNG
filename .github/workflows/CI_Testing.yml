@@ -133,12 +133,12 @@ jobs:
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "[CI Test Report] Unit Test and Coverage Report"
-          to: ${{ env.COMMIT_EMAIL }}
+          to: ${{ env.COMMIT_EMAIL }},${{ secrets.EMAIL_OWNER }}
           from: Test Bot <${{ secrets.EMAIL_USERNAME }}>
           content_type: text/plain
           body: |
-            ✅ TestNG Report Summary
-
+            ✅ TestNG Report Summary 
+            COMMITER: ${{ env.COMMIT_EMAIL }}
 
             📋 Total Tests : ${{ env.TOTAL }}
             ✅ Passed       : ${{ env.PASSED }}
