@@ -66,7 +66,7 @@ jobs:
           reportgenerator \
             -reports:target/site/jacoco/jacoco.xml \
             -targetdir:coverage-report \
-            -reporttypes:Html
+            -reporttypes:Html || true
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
@@ -118,22 +118,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: report-site
 
-      - name: Read email HTML content
-        id: read_email
-        run: |
-          echo "content<<EOF" >> $GITHUB_OUTPUT
-          echo "<!DOCTYPE html>" >> $GITHUB_OUTPUT
-          echo "<html><head><style>body { font-family: Arial; } .passed { color: green; } .failed { color: red; } .skipped { color: orange; }</style></head><body>" >> $GITHUB_OUTPUT
-          echo "<h2>📢 Unit Testing Report Summary</h2>" >> $GITHUB_OUTPUT
-          echo "<p>📋 <b>Total Tests:</b> ${{ env.TOTAL }}</p>" >> $GITHUB_OUTPUT
-          echo "<p class=\"passed\">✅ <b>Passed:</b> ${{ env.PASSED }}</p>" >> $GITHUB_OUTPUT
-          echo "<p class=\"failed\">❌ <b>Failed:</b> ${{ env.FAILED }}</p>" >> $GITHUB_OUTPUT
-          echo "<p class=\"skipped\">⚠️ <b>Skipped:</b> ${{ env.SKIPPED }}</p>" >> $GITHUB_OUTPUT
-          echo "<p>🔗 <a href='https://leanhhoa30012004.github.io/UnitTestingWithTestNG/'>View Full Report</a></p>" >> $GITHUB_OUTPUT
-          echo "</body></html>" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Send HTML Email with PDF
+      - name: Send PDF report to committer
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
@@ -144,5 +129,24 @@ jobs:
           to: ${{ env.COMMIT_EMAIL }}
           from: Test Bot <${{ secrets.EMAIL_USERNAME }}>
           content_type: text/html
-          body: ${{ steps.read_email.outputs.content }}
+          body: |
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <style>
+                  body { font-family: Arial, sans-serif; line-height: 1.6; }
+                  .passed { color: green; }
+                  .failed { color: red; }
+                  .skipped { color: orange; }
+                </style>
+              </head>
+              <body>
+                <h2>📢 Unit Testing Report Summary</h2>
+                <p>📋 <strong>Total Tests:</strong> ${{ env.TOTAL }}</p>
+                <p class="passed">✅ <strong>Passed:</strong> ${{ env.PASSED }}</p>
+                <p class="failed">❌ <strong>Failed:</strong> ${{ env.FAILED }}</p>
+                <p class="skipped">⚠️ <strong>Skipped:</strong> ${{ env.SKIPPED }}</p>
+                <p>🔗 <a href="https://leanhhoa30012004.github.io/UnitTestingWithTestNG/">View Full Report</a></p>
+              </body>
+            </html>
           attachments: pdf-report/final-report.pdf
