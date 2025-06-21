@@ -32,8 +32,8 @@ public class AuthenticationServiceTDDTest {
     }
 
 //    @Test
-//    @Test(dependsOnMethods = {"testLoginSuccess"}, groups = {"login"})
-    @Test(groups ={"login"} )
+    @Test(dependsOnMethods = {"testLoginSuccess"}, groups = {"login"})
+//    @Test(groups ={"login"} )
     public void testLoginWrongPassword() {
         when(userRepository.findByUsername("admin"))
                 .thenReturn(new User("admin", "1234"));
@@ -42,9 +42,9 @@ public class AuthenticationServiceTDDTest {
         assertFalse(result);
     }
 
-//    @Test(dependsOnMethods = {"testLoginWrongPassword"}, groups = {"login"})
+    @Test(dependsOnMethods = {"testLoginWrongPassword"}, groups = {"login"})
 //    @Test
-    @Test(groups ={"login"} )
+//    @Test(groups ={"login"} )
     public void testLoginUserNotFound() {
         when(userRepository.findByUsername("notfound"))
                 .thenReturn(null);
