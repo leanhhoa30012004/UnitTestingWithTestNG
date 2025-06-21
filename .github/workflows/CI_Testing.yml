@@ -129,22 +129,21 @@ jobs:
           from: Test Bot <${{ secrets.EMAIL_USERNAME }}>
           content_type: text/plain
           body: |
-            📢 **Unit Testing Report Summary** | © 2025 - Hoale
+            📢 Unit Testing Report Summary | © 2025 - Hoale
             ───────────────────────────────────────────────
-            
-            🧪 **Test Execution Overview:**
+
+            🧪 Test Execution Overview:
             ┌────────────────────────────┐
-            │ 📋 Total Tests :  ${{ env.TOTAL }}          │
-            │ ✅ Passed      :  ${{ env.PASSED }}          │
-            │ ❌ Failed      :  ${{ env.FAILED }}          │
-            │ ⚠️ Skipped     :  ${{ env.SKIPPED }}          │
+            │ 📋 Total Tests :  ${{ env.TOTAL }}           │
+            │ ✅ Passed      :  ${{ env.PASSED }}           │
+            │ ❌ Failed      :  ${{ env.FAILED }}           │
+            │ ⚠️ Skipped     :  ${{ env.SKIPPED }}           │
             └────────────────────────────┘
-            
-            🔗 **Full Report (HTML):**
+
+            🔗 Full HTML Report:
             https://leanhhoa30012004.github.io/UnitTestingWithTestNG/
-            
-            📎 **PDF Report:** See attached file `final-report.pdf`
-            
-            🛠 *This is an automated message sent by CI/CD pipeline.*
-            
-           attachments: pdf-report/final-report.pdf
+
+            📎 PDF Report: See attached file `final-report.pdf`
+
+            🛠 This is an automated message sent by the CI/CD pipeline.
+          attachments: pdf-report/final-report.pdf
