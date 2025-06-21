@@ -130,6 +130,7 @@ jobs:
           from: Test Bot <${{ secrets.EMAIL_USERNAME }}>
           content_type: text/html
           body: |
+            
             <!DOCTYPE html>
             <html>
               <head>
