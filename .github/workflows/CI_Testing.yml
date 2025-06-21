@@ -21,7 +21,8 @@ jobs:
           cache: maven
 
       - name: Build with Maven and JaCoCo
-        run: mvn clean verify -DsuiteXmlFile=testng.xml || true
+        run: mvn clean verify -DsuiteXmlFile=testng.xml
+        continue-on-error: true
 
       - name: Upload JAR
         uses: actions/upload-artifact@v4
@@ -47,10 +48,10 @@ jobs:
         run: mvn test -DsuiteXmlFile=testng.xml || true
 
       - name: Generate surefire HTML report
-        run: mvn surefire-report:report-only
+        run: mvn surefire-report:report-only || true
 
       - name: Generate JaCoCo Coverage Report
-        run: mvn jacoco:report
+        run: mvn jacoco:report || true
 
       - name: Install .NET for ReportGenerator
         uses: actions/setup-dotnet@v4
@@ -117,7 +118,22 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: report-site
 
-      - name: Send PDF report to committer
+      - name: Read email HTML content
+        id: read_email
+        run: |
+          echo "content<<EOF" >> $GITHUB_OUTPUT
+          echo "<!DOCTYPE html>" >> $GITHUB_OUTPUT
+          echo "<html><head><style>body { font-family: Arial; } .passed { color: green; } .failed { color: red; } .skipped { color: orange; }</style></head><body>" >> $GITHUB_OUTPUT
+          echo "<h2>📢 Unit Testing Report Summary</h2>" >> $GITHUB_OUTPUT
+          echo "<p>📋 <b>Total Tests:</b> ${{ env.TOTAL }}</p>" >> $GITHUB_OUTPUT
+          echo "<p class=\"passed\">✅ <b>Passed:</b> ${{ env.PASSED }}</p>" >> $GITHUB_OUTPUT
+          echo "<p class=\"failed\">❌ <b>Failed:</b> ${{ env.FAILED }}</p>" >> $GITHUB_OUTPUT
+          echo "<p class=\"skipped\">⚠️ <b>Skipped:</b> ${{ env.SKIPPED }}</p>" >> $GITHUB_OUTPUT
+          echo "<p>🔗 <a href='https://leanhhoa30012004.github.io/UnitTestingWithTestNG/'>View Full Report</a></p>" >> $GITHUB_OUTPUT
+          echo "</body></html>" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Send HTML Email with PDF
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
@@ -128,42 +144,5 @@ jobs:
           to: ${{ env.COMMIT_EMAIL }}
           from: Test Bot <${{ secrets.EMAIL_USERNAME }}>
           content_type: text/html
-          body: |
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <style>
-                body { font-family: Arial, sans-serif; color: #333; }
-                .summary-table {
-                  border-collapse: collapse;
-                  width: 100%;
-                  margin-top: 10px;
-                }
-                .summary-table th, .summary-table td {
-                  border: 1px solid #ccc;
-                  padding: 8px 12px;
-                  text-align: left;
-                }
-                .summary-table th {
-                  background-color: #f2f2f2;
-                }
-                .success { color: green; }
-                .fail { color: red; }
-                .skip { color: orange; }
-              </style>
-            </head>
-            <body>
-              <h2>📢 Unit Testing Report Summary | © 2025 - Hoale</h2>
-              <table class="summary-table">
-                <tr><th>Total Tests</th><td>${{ env.TOTAL }}</td></tr>
-                <tr><th class="success">✅ Passed</th><td>${{ env.PASSED }}</td></tr>
-                <tr><th class="fail">❌ Failed</th><td>${{ env.FAILED }}</td></tr>
-                <tr><th class="skip">⚠️ Skipped</th><td>${{ env.SKIPPED }}</td></tr>
-              </table>
-              <p>🔗 <a href="https://leanhhoa30012004.github.io/UnitTestingWithTestNG/" target="_blank">View Full HTML Report</a></p>
-              <p>📎 PDF Report is attached.</p>
-              <hr />
-              <small>This is an automated message sent by CI/CD workflow.</small>
-            </body>
-            </html>
+          body: ${{ steps.read_email.outputs.content }}
           attachments: pdf-report/final-report.pdf
