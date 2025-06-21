@@ -94,17 +94,24 @@ jobs:
       - name: Install wkhtmltopdf
         run: sudo apt-get update && sudo apt-get install -y wkhtmltopdf
 
-      - name: Merge test and coverage reports into HTML site
+      - name: Merge test and coverage reports into single HTML file
         run: |
           mkdir -p report-site/testng
           mkdir -p report-site/coverage
+
           cp -r target/site/* report-site/testng/
           cp -r coverage-report/* report-site/coverage/
-          echo '<html><head><title>Unit Testing Report</title></head><body>' > report-site/index.html
-          echo '<h1>Unit Test Report</h1>' >> report-site/index.html
-          echo '<iframe src="testng/surefire-report.html" width="100%" height="600px"></iframe>' >> report-site/index.html
-          echo '<h1>Code Coverage Report</h1>' >> report-site/index.html
-          echo '<iframe src="coverage/index.html" width="100%" height="600px"></iframe>' >> report-site/index.html
+
+          echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>CI Report</title>' > report-site/index.html
+          echo '<style>body{font-family:sans-serif;margin:20px;} h1{color:#333;} hr{margin:40px 0;}</style>' >> report-site/index.html
+          echo '</head><body>' >> report-site/index.html
+
+          echo '<h1>🧪 Unit Test Report</h1><hr>' >> report-site/index.html
+          cat report-site/testng/surefire-report.html >> report-site/index.html
+
+          echo '<h1>📊 Code Coverage Report</h1><hr>' >> report-site/index.html
+          cat report-site/coverage/index.html >> report-site/index.html
+
           echo '</body></html>' >> report-site/index.html
 
       - name: Convert combined HTML to PDF
