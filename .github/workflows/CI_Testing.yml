@@ -53,27 +53,6 @@ jobs:
       - name: Generate JaCoCo Coverage Report
         run: mvn jacoco:report || true
 
-      - name: Install .NET for ReportGenerator
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-
-      - name: Install ReportGenerator global tool
-        run: dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.*
-
-      - name: Generate HTML & chart coverage report
-        run: |
-          reportgenerator \
-            -reports:target/site/jacoco/jacoco.xml \
-            -targetdir:coverage-report \
-            -reporttypes:Html || true
-
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: code-coverage-report
-          path: coverage-report/index.htm
-
       - name: Extract test summary
         id: test_summary
         run: |
@@ -87,12 +66,12 @@ jobs:
           echo "FAILED=$FAILED" >> $GITHUB_ENV
           echo "SKIPPED=$SKIPPED" >> $GITHUB_ENV
 
-      - name: Get committer email
+      - name: Get committer email and date
         run: |
-          echo "COMMIT_EMAIL=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_ENV
-
-      - name: Install wkhtmltopdf
-        run: sudo apt-get update && sudo apt-get install -y wkhtmltopdf
+          COMMIT_EMAIL=$(git log -1 --pretty=format:'%ae')
+          COMMIT_DATE=$(git log -1 --pretty=format:'%cd' --date=format:'%Y-%m-%d')
+          echo "COMMIT_EMAIL=$COMMIT_EMAIL" >> $GITHUB_ENV
+          echo "COMMIT_DATE=$COMMIT_DATE" >> $GITHUB_ENV
 
       - name: Merge test and coverage reports into HTML site (styled)
         run: |
@@ -100,7 +79,7 @@ jobs:
           mkdir -p report-site/coverage
 
           cp -r target/site/* report-site/testng/
-          cp -r coverage-report/* report-site/coverage/
+          cp -r target/site/jacoco/* report-site/coverage/
 
           echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>CI Report</title>' > report-site/index.html
           echo '<style>body{font-family:sans-serif;margin:20px;} iframe{width:100%;height:800px;border:none;}</style>' >> report-site/index.html
@@ -117,13 +96,13 @@ jobs:
       - name: Convert combined HTML to PDF
         run: |
           mkdir -p pdf-report
-          wkhtmltopdf --enable-local-file-access report-site/index.html pdf-report/final-report.pdf
+          wkhtmltopdf --enable-local-file-access report-site/index.html pdf-report/${{ env.COMMIT_EMAIL }}-${{ env.COMMIT_DATE }}-CI_Report.pdf
 
-      - name: Deploy to GitHub Pages
+      - name: Deploy PDF report to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: report-site
+          publish_dir: pdf-report
 
       - name: Send PDF report to committer
         uses: dawidd6/action-send-mail@v3
@@ -146,7 +125,8 @@ jobs:
             ⚠️ Skipped     : ${{ env.SKIPPED }}
             
             🔗 View All report here: https://leanhhoa30012004.github.io/UnitTestingWithTestNG/
-          attachments: pdf-report/final-report.pdf
+          attachments: pdf-report/${{ env.COMMIT_EMAIL }}-${{ env.COMMIT_DATE }}-CI_Report.pdf
+
       - name: Fail job if there are test failures
         if: env.FAILED != '0'
         run: |
