@@ -93,6 +93,11 @@ jobs:
 
           echo '</body></html>' >> report-site/index.html
 
+      - name: Install wkhtmltopdf
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wkhtmltopdf
+
       - name: Convert combined HTML to PDF
         run: |
           mkdir -p pdf-report
