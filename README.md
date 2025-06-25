@@ -1,3 +1,5 @@
+[![Login Function Testing with TestNG (CI/CD) | © 2025 - Hoale](https://github.com/leanhhoa30012004/UnitTestingWithTestNG/actions/workflows/CI_Testing.yml/badge.svg?branch=main)](https://github.com/leanhhoa30012004/UnitTestingWithTestNG/actions/workflows/CI_Testing.yml)
+
 # Welcome to the Login Testing Utility Repository
 
 ## Overview
