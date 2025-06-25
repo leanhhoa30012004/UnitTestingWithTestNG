@@ -73,10 +73,17 @@ jobs:
           echo "COMMIT_EMAIL=$COMMIT_EMAIL" >> $GITHUB_ENV
           echo "COMMIT_DATE=$COMMIT_DATE" >> $GITHUB_ENV
 
+      - name: Download ReportGenerator
+        run: |
+          mkdir -p tools
+          curl -L -o tools/reportgenerator.zip https://github.com/danielpalme/ReportGenerator/releases/download/v5.1.21/ReportGenerator_5.1.21.zip
+          unzip tools/reportgenerator.zip -d tools
+          chmod +x tools/ReportGenerator.exe
+
       - name: Generate Coverage Report with Pie Chart
         run: |
           mkdir -p report-site/coverage
-          java -jar /path/to/reportgenerator.jar \
+          mono tools/ReportGenerator.exe \
             -reports:target/site/jacoco/jacoco.xml \
             -targetdir:report-site/coverage \
             -reporttypes:HtmlChart
