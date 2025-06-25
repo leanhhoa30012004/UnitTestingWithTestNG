@@ -73,13 +73,19 @@ jobs:
           echo "COMMIT_EMAIL=$COMMIT_EMAIL" >> $GITHUB_ENV
           echo "COMMIT_DATE=$COMMIT_DATE" >> $GITHUB_ENV
 
+      - name: Generate Coverage Report with Pie Chart
+        run: |
+          mkdir -p report-site/coverage
+          java -jar /path/to/reportgenerator.jar \
+            -reports:target/site/jacoco/jacoco.xml \
+            -targetdir:report-site/coverage \
+            -reporttypes:HtmlChart
+
       - name: Merge test and coverage reports into HTML site (styled)
         run: |
           mkdir -p report-site/testng
-          mkdir -p report-site/coverage
 
           cp -r target/site/* report-site/testng/
-          cp -r target/site/jacoco/* report-site/coverage/
 
           echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>CI Report</title>' > report-site/index.html
           echo '<style>body{font-family:sans-serif;margin:20px;} iframe{width:100%;height:800px;border:none;}</style>' >> report-site/index.html
@@ -103,11 +109,11 @@ jobs:
           mkdir -p pdf-report
           wkhtmltopdf --enable-local-file-access report-site/index.html pdf-report/${{ env.COMMIT_EMAIL }}-${{ env.COMMIT_DATE }}-CI_Report.pdf
 
-      - name: Deploy PDF report to GitHub Pages
+      - name: Deploy Full Report to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: pdf-report
+          publish_dir: report-site
 
       - name: Send PDF report to committer
         uses: dawidd6/action-send-mail@v3
